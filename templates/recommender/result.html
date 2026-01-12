@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Recommendation</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-slate-50 text-slate-900">
+  <main class="mx-auto max-w-3xl px-5 py-10">
+    <div class="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200 p-6 sm:p-8">
+      <div class="flex flex-col gap-2">
+        <h1 class="text-3xl sm:text-4xl font-bold tracking-tight">
+          Your Recommendation
+        </h1>
+        <p class="text-base sm:text-lg text-slate-600">
+          <span class="font-semibold text-slate-700">Created at:</span>
+          {{ event.created_at }}
+        </p>
+      </div>
+
+      <div class="mt-8">
+        <h2 class="text-2xl sm:text-3xl font-semibold">
+          Recommended products
+        </h2>
+
+        <ul class="mt-4 space-y-3">
+          {% for item in products_with_links %}
+            <li class="flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+              <span class="mt-1 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-900 text-white text-sm font-semibold">
+                {{ forloop.counter }}
+              </span>
+
+              <div class="min-w-0">
+                {% if item.url %}
+                  <a
+                    class="block text-lg sm:text-xl font-semibold text-slate-900 underline decoration-slate-300 underline-offset-4 hover:decoration-slate-900"
+                    href="{{ item.url }}"
+                    target="_blank"
+                    rel="noopener"
+                  >
+                    {{ item.name }}
+                  </a>
+                {% else %}
+                  <span class="block text-lg sm:text-xl font-semibold text-slate-900">
+                    {{ item.name }}
+                  </span>
+                  <p class="mt-1 text-sm sm:text-base text-slate-500">
+                    (No link available)
+                  </p>
+                {% endif %}
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <div class="mt-8 flex flex-col sm:flex-row gap-3">
+        <a
+          href="{% url 'recommender:start' %}"
+          class="inline-flex items-center justify-center rounded-xl bg-slate-900 px-5 py-3 text-lg font-semibold text-white hover:bg-slate-800"
+        >
+          Start again
+        </a>
+        <a
+          href="{% url 'recommender:analytics' %}"
+          class="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-5 py-3 text-lg font-semibold text-slate-900 hover:bg-slate-50"
+        >
+          View analytics
+        </a>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

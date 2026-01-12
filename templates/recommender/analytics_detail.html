@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Analytics Detail</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-slate-100 text-slate-800 min-h-screen">
+  <div class="max-w-5xl mx-auto px-4 py-10">
+
+    <!-- Header -->
+    <div class="flex items-start justify-between gap-4 mb-6">
+      <div>
+        <h1 class="text-2xl font-bold text-blue-900">Analytics Detail</h1>
+        <p class="text-slate-600">Event #{{ event.id }} — {{ event.created_at }}</p>
+      </div>
+
+      <div class="flex gap-2">
+        <a href="{% url 'recommender:analytics' %}"
+           class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-800 font-semibold px-4 py-2 rounded-lg transition">
+          Back to dashboard
+        </a>
+        <a href="{% url 'recommender:question' %}?reset=1"
+           class="bg-blue-900 hover:bg-blue-800 text-white font-semibold px-4 py-2 rounded-lg transition rounded-lg">
+          Start over
+        </a>
+      </div>
+    </div>
+
+    <!-- Summary cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div class="bg-white border border-slate-200 rounded-xl shadow p-5">
+        <div class="text-sm text-slate-500">Segment</div>
+        <div class="text-lg font-semibold mt-1">{{ event.segment|default:"-" }}</div>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-xl shadow p-5">
+        <div class="text-sm text-slate-500">Customer Type</div>
+        <div class="text-lg font-semibold mt-1">{{ event.customer_type|default:"-" }}</div>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-xl shadow p-5">
+        <div class="text-sm text-slate-500">Goal</div>
+        <div class="text-lg font-semibold mt-1">{{ event.goal|default:"-" }}</div>
+      </div>
+    </div>
+
+    <!-- Recommended products -->
+    <div class="bg-white border border-slate-200 rounded-xl shadow p-6 mb-6">
+      <h2 class="text-lg font-bold text-slate-800 mb-3">Recommended Products</h2>
+
+      {% if products_with_links %}
+        <div class="space-y-3">
+          {% for item in products_with_links %}
+            <div class="flex items-start justify-between gap-4 p-4 border border-slate-200 rounded-lg">
+              <div>
+                <div class="font-semibold text-slate-800">{{ item.name }}</div>
+              </div>
+
+              {% if item.url %}
+                <a href="{{ item.url }}" target="_blank" rel="noopener"
+                  class="shrink-0 text-blue-900 font-semibold hover:underline">
+                  Open link
+                </a>
+              {% else %}
+                <span class="shrink-0 text-slate-400">No link</span>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="text-slate-500">No recommended products recorded.</div>
+      {% endif %}
+    </div>
+
+    <!-- Answers -->
+    <div class="bg-white border border-slate-200 rounded-xl shadow p-6">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-lg font-bold text-slate-800">Answers (Raw JSON)</h2>
+
+        <!-- Optional: copy helper (no JS required, but this is a nice UI hint) -->
+        <span class="text-xs text-slate-500">Useful for debugging tree paths</span>
+      </div>
+
+      <div class="bg-slate-900 text-slate-100 rounded-lg p-4 overflow-x-auto text-sm">
+        <pre class="whitespace-pre-wrap break-words">{{ event.answers|default:"{}"|safe }}</pre>
+      </div>
+
+      <!-- Optional friendly rendering -->
+      {% if event.answers %}
+        <div class="mt-6">
+          <h3 class="font-semibold text-slate-800 mb-2">Answer list</h3>
+          <div class="overflow-x-auto">
+            <table class="min-w-full text-sm border border-slate-200 rounded-lg overflow-hidden">
+              <thead class="bg-slate-50 text-slate-600">
+                <tr>
+                  <th class="text-left px-4 py-2 font-semibold">Node</th>
+                  <th class="text-left px-4 py-2 font-semibold">Choice</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-200">
+                {% for node, choice in event.answers.items %}
+                  <tr class="hover:bg-slate-50">
+                    <td class="px-4 py-2 font-mono text-xs text-slate-700">{{ node }}</td>
+                    <td class="px-4 py-2">{{ choice }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+
+  </div>
+</body>
+</html>
