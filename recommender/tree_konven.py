@@ -781,7 +781,7 @@ TREE = {
             "payroll": {"label": "Payroll", "next": "leaf_payroll"},
             "cash_mgmt": {"label": "Cash management", "next": "biz_cash_mgmt_q4"},
             "merchant": {"label": "Merchant payments", "next": "biz_merchant_q4"},
-            "billing": {"label": "Automated billing", "next": "leaf_virtual_account_btn"},
+            "billing": {"label": "Virtual account", "next": "leaf_virtual_account_btn"},
             "integration": {"label": "System integration", "next": "leaf_btn_open_api"},
             "securities": {"label": "Securities / capital market services", "next": "biz_securities_services_q4"},
             "token": {"label": "Security token for business banking (BTN Token)", "next": "leaf_btn_token"},

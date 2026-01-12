@@ -277,13 +277,18 @@ def _bar_chart_base64(counter: Counter, title: str, top_n: int = 10) -> str:
     labels = [k if k else "(blank)" for k, _ in items]
     values = [v for _, v in items]
 
-    fig = plt.figure(figsize=(8, 4))
+    fig = plt.figure(figsize=(8, 6))
     plt.title(title)
-    plt.bar(range(len(values)), values)
-    plt.xticks(range(len(labels)), labels, rotation=35, ha="right")
-    plt.ylabel("Count")
+
+    # Horizontal bars
+    y_pos = range(len(values))
+    plt.barh(y_pos, values)
+    plt.yticks(y_pos, labels)
+
+    plt.xlabel("Count")
     plt.tight_layout()
     return _fig_to_base64(fig)
+
 
 @admin_required
 def analytics(request):
@@ -300,7 +305,6 @@ def analytics(request):
     total = len(events)
     goal_counter = Counter((e.goal or "").strip() for e in events)
     customer_type_counter = Counter((e.customer_type or "").strip() for e in events)
-    segment_counter = Counter((e.segment or "").strip() for e in events)
 
     product_counter = Counter()
     for e in events:
@@ -311,7 +315,7 @@ def analytics(request):
 
     goal_chart = _pie_chart_base64(goal_counter, "Goals (Business/Individual)")
     customer_type_chart = _pie_chart_base64(customer_type_counter, "Customer Type")
-    top_products_chart = _bar_chart_base64(product_counter, "Top Recommended Products", top_n=12)
+    top_products_chart = _bar_chart_base64(product_counter, "Top Recommended Products", top_n=5)
 
     # Simple “most common” KPIs
     top_goal = goal_counter.most_common(1)[0][0] if goal_counter else "-"
