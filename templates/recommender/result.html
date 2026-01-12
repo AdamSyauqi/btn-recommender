@@ -63,12 +63,14 @@
         >
           Start again
         </a>
-        <a
-          href="{% url 'recommender:analytics' %}"
-          class="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-5 py-3 text-lg font-semibold text-slate-900 hover:bg-slate-50"
-        >
-          View analytics
-        </a>
+        {% if request.user.is_authenticated and request.user.is_staff %}
+          <a
+            href="{% url 'recommender:analytics' %}"
+            class="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-5 py-3 text-lg font-semibold text-slate-900 hover:bg-slate-50"
+          >
+            View analytics
+          </a>
+        {% endif %}
       </div>
     </div>
   </main>

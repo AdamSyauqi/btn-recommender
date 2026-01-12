@@ -11,8 +11,10 @@ import matplotlib
 matplotlib.use("Agg")  # server-safe backend
 import matplotlib.pyplot as plt
 
-from django.http import Http404
+from django.http import Http404, HttpResponseForbidden
 from django.shortcuts import redirect, render
+from django.contrib.auth import authenticate, login as dj_login, logout as dj_logout
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.urls import reverse
 
 from .models import RecommendationEvent
@@ -22,6 +24,62 @@ SESSION_ANSWERS_KEY = "btn_answers"          # Dict[node_id -> choice_key]
 SESSION_NODE_KEY = "btn_node"               # current node id
 SESSION_META_KEY = "btn_meta"               # accumulated meta: segment/customer_type/goal/etc
 SESSION_LAST_EVENT_ID = "btn_last_event_id" # prevent duplicate logging on refresh
+
+def _is_admin(user):
+    return user.is_authenticated and (user.is_staff or user.is_superuser)
+
+
+def admin_required(view_func):
+    """
+    - If not logged in: redirect to recommender:login
+    - If logged in but not admin: 403
+    """
+    @login_required(login_url="recommender:login")
+    @user_passes_test(_is_admin, login_url="recommender:login")
+    def _wrapped(request, *args, **kwargs):
+        # user_passes_test redirects non-admins to login by default;
+        # we prefer 403 if they ARE logged in but not admin.
+        if request.user.is_authenticated and not _is_admin(request.user):
+            return HttpResponseForbidden("Forbidden")
+        return view_func(request, *args, **kwargs)
+    return _wrapped
+
+
+def login_view(request):
+    """
+    Simple admin login page.
+    Redirects to ?next=... if provided; otherwise goes to analytics.
+    """
+    next_url = request.GET.get("next") or request.POST.get("next") or reverse("recommender:analytics")
+
+    # If already logged in as admin, go straight to analytics
+    if request.user.is_authenticated and _is_admin(request.user):
+        return redirect(next_url)
+
+    error = ""
+    if request.method == "POST":
+        username = (request.POST.get("username") or "").strip()
+        password = request.POST.get("password") or ""
+
+        user = authenticate(request, username=username, password=password)
+        if user is None:
+            error = "Invalid username or password."
+        else:
+            if not _is_admin(user):
+                error = "This account is not allowed to access analytics."
+            else:
+                dj_login(request, user)
+                return redirect(next_url)
+
+    return render(request, "recommender/login.html", {
+        "error": error,
+        "next": next_url,
+    })
+
+
+def logout_view(request):
+    dj_logout(request)
+    return redirect("recommender:login")
 
 def _ensure_session(request) -> None:
     if not request.session.session_key:
@@ -227,7 +285,7 @@ def _bar_chart_base64(counter: Counter, title: str, top_n: int = 10) -> str:
     plt.tight_layout()
     return _fig_to_base64(fig)
 
-
+@admin_required
 def analytics(request):
     """
     Analytics dashboard:
@@ -275,6 +333,7 @@ def analytics(request):
         },
     })
 
+@admin_required
 def analytics_detail(request, event_id: int):
     """
     Show one event with:
